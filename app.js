@@ -312,6 +312,8 @@ async function sendChatMessage() {
 }
 
 async function chatWithClaude(message, imageBase64) {
+  const key = localStorage.getItem('claude_api_key');
+  
   try {
     const content = [];
     if (message) content.push({ type: 'text', text: message });
@@ -322,9 +324,13 @@ async function chatWithClaude(message, imageBase64) {
       });
     }
 
-    const response = await fetch('/api/claude', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01'
+      },
       body: JSON.stringify({
         model: 'claude-3-5-sonnet-20241022',
         max_tokens: 2048,
@@ -730,9 +736,19 @@ async function testConnection(aiName) {
     let response;
     
     if (aiName === 'claude') {
-      updateStatus(aiName, 'connected', '✅ Configurado');
-      alert(`✅ API key guardada. La conexión real se prueba al capturar.`);
-      return;
+      response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-3-5-sonnet-20241022',
+          max_tokens: 10,
+          messages: [{ role: 'user', content: 'test' }]
+        })
+      });
     } else if (aiName === 'gemini') {
       response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${key}`,
@@ -927,11 +943,15 @@ async function captureAndAnalyze() {
 }
 
 async function analyzeWithClaude(imageBase64) {
+  const key = localStorage.getItem('claude_api_key');
+  
   try {
-    const response = await fetch('/api/claude', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
         model: 'claude-3-5-sonnet-20241022',

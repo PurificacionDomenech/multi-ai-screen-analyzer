@@ -124,16 +124,18 @@
                 <span class="status-badge disconnected" id="claude-status">No configurado</span>
               </div>
             </div>
-            <div class="input-group">
-              <label for="claude-key">API Key:</label>
-              <input type="password" id="claude-key" placeholder="sk-ant-api03-...">
-              <p class="help-text">Obtén tu key en: <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> (100k tokens/mes gratis)</p>
-            </div>
-            <div class="ai-actions">
-              <button onclick="saveKey('claude')">💾 Guardar</button>
-              <button onclick="testConnection('claude')" class="success">🔍 Probar Conexión</button>
-              <button onclick="clearKey('claude')" class="secondary">🗑️ Borrar</button>
-            </div>
+            <form onsubmit="event.preventDefault(); saveKey('claude');">
+              <div class="input-group">
+                <label for="claude-key">API Key:</label>
+                <input type="password" id="claude-key" placeholder="sk-ant-api03-..." autocomplete="off">
+                <p class="help-text">Obtén tu key en: <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> (100k tokens/mes gratis)</p>
+              </div>
+              <div class="ai-actions">
+                <button type="submit">💾 Guardar</button>
+                <button type="button" onclick="testConnection('claude')" class="success">🔍 Probar Conexión</button>
+                <button type="button" onclick="clearKey('claude')" class="secondary">🗑️ Borrar</button>
+              </div>
+            </form>
           </div>
 
           <!-- GEMINI -->
@@ -144,16 +146,18 @@
                 <span class="status-badge disconnected" id="gemini-status">No configurado</span>
               </div>
             </div>
-            <div class="input-group">
-              <label for="gemini-key">API Key:</label>
-              <input type="password" id="gemini-key" placeholder="AIzaSy...">
-              <p class="help-text">Obtén tu key en: <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a> (1.5M tokens/día gratis)</p>
-            </div>
-            <div class="ai-actions">
-              <button onclick="saveKey('gemini')">💾 Guardar</button>
-              <button onclick="testConnection('gemini')" class="success">🔍 Probar Conexión</button>
-              <button onclick="clearKey('gemini')" class="secondary">🗑️ Borrar</button>
-            </div>
+            <form onsubmit="event.preventDefault(); saveKey('gemini');">
+              <div class="input-group">
+                <label for="gemini-key">API Key:</label>
+                <input type="password" id="gemini-key" placeholder="AIzaSy..." autocomplete="off">
+                <p class="help-text">Obtén tu key en: <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a> (1.5M tokens/día gratis)</p>
+              </div>
+              <div class="ai-actions">
+                <button type="submit">💾 Guardar</button>
+                <button type="button" onclick="testConnection('gemini')" class="success">🔍 Probar Conexión</button>
+                <button type="button" onclick="clearKey('gemini')" class="secondary">🗑️ Borrar</button>
+              </div>
+            </form>
           </div>
 
           <!-- GROK -->
@@ -164,16 +168,18 @@
                 <span class="status-badge disconnected" id="grok-status">No configurado</span>
               </div>
             </div>
-            <div class="input-group">
-              <label for="grok-key">API Key:</label>
-              <input type="password" id="grok-key" placeholder="xai-...">
-              <p class="help-text">Obtén tu key en: <a href="https://console.x.ai" target="_blank">console.x.ai</a></p>
-            </div>
-            <div class="ai-actions">
-              <button onclick="saveKey('grok')">💾 Guardar</button>
-              <button onclick="testConnection('grok')" class="success">🔍 Probar Conexión</button>
-              <button onclick="clearKey('grok')" class="secondary">🗑️ Borrar</button>
-            </div>
+            <form onsubmit="event.preventDefault(); saveKey('grok');">
+              <div class="input-group">
+                <label for="grok-key">API Key:</label>
+                <input type="password" id="grok-key" placeholder="xai-..." autocomplete="off">
+                <p class="help-text">Obtén tu key en: <a href="https://console.x.ai" target="_blank">console.x.ai</a></p>
+              </div>
+              <div class="ai-actions">
+                <button type="submit">💾 Guardar</button>
+                <button type="button" onclick="testConnection('grok')" class="success">🔍 Probar Conexión</button>
+                <button type="button" onclick="clearKey('grok')" class="secondary">🗑️ Borrar</button>
+              </div>
+            </form>
           </div>
 
           <!-- LOCAL (LM Studio / Ollama) -->
@@ -189,24 +195,26 @@
                 ⚠️ <strong>Asegúrate de tener LM Studio o Ollama corriendo localmente</strong> con el servidor API activado antes de usar esta opción.
               </p>
             </div>
-            <div class="input-group">
-              <label for="local-endpoint">Endpoint URL:</label>
-              <input type="text" id="local-endpoint" placeholder="http://localhost:1234/v1/chat/completions" value="http://localhost:1234/v1/chat/completions">
-              <p class="help-text">
-                LM Studio: <code>http://localhost:1234/v1/chat/completions</code><br>
-                Ollama: <code>http://localhost:11434/v1/chat/completions</code>
-              </p>
-            </div>
-            <div class="input-group">
-              <label for="local-model">Nombre del Modelo:</label>
-              <input type="text" id="local-model" placeholder="local-model" value="local-model">
-              <p class="help-text">Puedes usar cualquier nombre, el servidor local lo gestionará</p>
-            </div>
-            <div class="ai-actions">
-              <button onclick="saveLocalConfig()">💾 Guardar</button>
-              <button onclick="testConnection('local')" class="success">🔍 Probar Conexión</button>
-              <button onclick="clearLocalConfig()" class="secondary">🗑️ Borrar</button>
-            </div>
+            <form onsubmit="event.preventDefault(); saveLocalConfig();">
+              <div class="input-group">
+                <label for="local-endpoint">Endpoint URL:</label>
+                <input type="text" id="local-endpoint" placeholder="http://localhost:1234/v1/chat/completions" value="http://localhost:1234/v1/chat/completions" autocomplete="off">
+                <p class="help-text">
+                  LM Studio: <code>http://localhost:1234/v1/chat/completions</code><br>
+                  Ollama: <code>http://localhost:11434/v1/chat/completions</code>
+                </p>
+              </div>
+              <div class="input-group">
+                <label for="local-model">Nombre del Modelo:</label>
+                <input type="text" id="local-model" placeholder="local-model" value="local-model" autocomplete="off">
+                <p class="help-text">Puedes usar cualquier nombre, el servidor local lo gestionará</p>
+              </div>
+              <div class="ai-actions">
+                <button type="submit">💾 Guardar</button>
+                <button type="button" onclick="testConnection('local')" class="success">🔍 Probar Conexión</button>
+                <button type="button" onclick="clearLocalConfig()" class="secondary">🗑️ Borrar</button>
+              </div>
+            </form>
           </div>
 
           <!-- IAs PERSONALIZADAS -->

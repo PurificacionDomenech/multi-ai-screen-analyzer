@@ -55,16 +55,18 @@ function renderCustomAIConfigs() {
             <span class="status-badge disconnected" id="${aiKey}-status">No configurado</span>
           </div>
         </div>
-        <div class="input-group">
-          <label for="${aiKey}-key">API Key:</label>
-          <input type="password" id="${aiKey}-key" placeholder="Tu API key...">
-          <p class="help-text">Endpoint: ${ai.endpoint}</p>
-        </div>
-        <div class="ai-actions">
-          <button onclick="saveKey('${aiKey}')">💾 Guardar</button>
-          <button onclick="testCustomConnection('${aiKey}')" class="success">🔍 Probar</button>
-          <button onclick="clearKey('${aiKey}')" class="secondary">🗑️ Borrar Key</button>
-        </div>
+        <form onsubmit="event.preventDefault(); saveKey('${aiKey}');">
+          <div class="input-group">
+            <label for="${aiKey}-key">API Key:</label>
+            <input type="password" id="${aiKey}-key" placeholder="Tu API key..." autocomplete="off">
+            <p class="help-text">Endpoint: ${ai.endpoint}</p>
+          </div>
+          <div class="ai-actions">
+            <button type="submit">💾 Guardar</button>
+            <button type="button" onclick="testCustomConnection('${aiKey}')" class="success">🔍 Probar</button>
+            <button type="button" onclick="clearKey('${aiKey}')" class="secondary">🗑️ Borrar Key</button>
+          </div>
+        </form>
       </div>
     `;
   });

@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const fetch = require('node-fetch');
 const app = express();
-const port = 3000; // Puerto por defecto en Replit
+const port = 5000; // Puerto por defecto en Replit
 
 // Middleware para parsear JSON y limitar el tamaño del cuerpo (necesario para la imagen base64)
 app.use(express.json({ limit: '50mb' }));
@@ -43,6 +43,6 @@ app.post('/api/claude', async (req, res) => {
 });
 
 // Iniciar el servidor
-app.listen(port, () => {
-    console.log(`Servidor proxy y estático iniciado en http://localhost:${port}` );
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Servidor proxy y estático iniciado en http://0.0.0.0:${port}` );
 });

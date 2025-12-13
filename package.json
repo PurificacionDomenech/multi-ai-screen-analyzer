@@ -1,0 +1,22 @@
+{
+  "name": "multi-ai-screen-analyzer",
+  "version": "1.0.0",
+  "description": "Captura tu pantalla y obtén análisis simultáneo de múltiples IAs (Claude, Gemini, Grok).",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "ai",
+    "vision",
+    "claude",
+    "gemini",
+    "grok"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-fetch": "^2.6.1"
+  }
+}

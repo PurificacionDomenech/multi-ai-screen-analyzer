@@ -25,6 +25,7 @@
     <div class="card">
       <div class="tab-container">
         <button class="tab active" onclick="switchTab('capture')">📸 Capturar</button>
+        <button class="tab" onclick="switchTab('chat')">💬 Chat</button>
         <button class="tab" onclick="switchTab('config')">⚙️ Configuración</button>
         <button class="tab" onclick="switchTab('help')">❓ Ayuda</button>
       </div>
@@ -56,6 +57,39 @@
 
         <div id="preview" class="preview-container"></div>
         <div id="responses-container"></div>
+      </div>
+
+      <!-- TAB: CHAT -->
+      <div id="tab-chat" class="tab-content">
+        <h2>Selecciona las IAs para chatear:</h2>
+        <div class="checkbox-group">
+          <label class="checkbox-item">
+            <input type="checkbox" id="chat-claude" checked>
+            <span>🧠 Claude</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="chat-gemini" checked>
+            <span>✨ Gemini</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="chat-grok">
+            <span>🚀 Grok</span>
+          </label>
+          <div id="chat-custom-ai-checkboxes"></div>
+        </div>
+
+        <div class="chat-container">
+          <div id="chat-messages" class="chat-messages"></div>
+          <div class="chat-input-container">
+            <input type="file" id="chat-image" accept="image/*" style="display: none;" onchange="handleChatImageSelect(event)">
+            <button onclick="document.getElementById('chat-image').click()" class="secondary" style="margin-bottom: 10px;">
+              📎 Adjuntar Imagen
+            </button>
+            <div id="chat-image-preview"></div>
+            <textarea id="chat-input" placeholder="Escribe tu pregunta aquí... (con o sin imagen)" rows="3"></textarea>
+            <button onclick="sendChatMessage()" class="success">💬 Enviar</button>
+          </div>
+        </div>
       </div>
 
       <!-- TAB: CONFIGURACIÓN -->

@@ -72,17 +72,313 @@ function renderCustomAIConfigs() {
 
 function renderCustomAICheckboxes() {
   const container = document.getElementById('custom-ai-checkboxes');
+  const chatContainer = document.getElementById('chat-custom-ai-checkboxes');
+  
   container.innerHTML = '';
+  if (chatContainer) chatContainer.innerHTML = '';
 
   Object.keys(customAIs).forEach(aiKey => {
     const ai = customAIs[aiKey];
-    container.innerHTML += `
+    const checkbox = `
       <label class="checkbox-item">
         <input type="checkbox" id="use-${aiKey}">
         <span>${ai.icon} ${ai.name}</span>
       </label>
     `;
+    const chatCheckbox = `
+      <label class="checkbox-item">
+        <input type="checkbox" id="chat-${aiKey}">
+        <span>${ai.icon} ${ai.name}</span>
+      </label>
+    `;
+    
+    container.innerHTML += checkbox;
+    if (chatContainer) chatContainer.innerHTML += chatCheckbox;
   });
+}
+
+let currentChatImage = null;
+
+function handleChatImageSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    currentChatImage = e.target.result.split(',')[1];
+    const preview = document.getElementById('chat-image-preview');
+    preview.innerHTML = `
+      <img src="${e.target.result}">
+      <button onclick="removeChatImage()">✕ Quitar</button>
+    `;
+    preview.classList.add('active');
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeChatImage() {
+  currentChatImage = null;
+  document.getElementById('chat-image-preview').classList.remove('active');
+  document.getElementById('chat-image').value = '';
+}
+
+async function sendChatMessage() {
+  const input = document.getElementById('chat-input');
+  const message = input.value.trim();
+  
+  if (!message && !currentChatImage) {
+    alert('⚠️ Escribe un mensaje o adjunta una imagen');
+    return;
+  }
+
+  const useClaude = document.getElementById('chat-claude').checked;
+  const useGemini = document.getElementById('chat-gemini').checked;
+  const useGrok = document.getElementById('chat-grok').checked;
+  
+  const customChecked = Object.keys(customAIs).filter(aiKey => {
+    const checkbox = document.getElementById(`chat-${aiKey}`);
+    return checkbox && checkbox.checked;
+  });
+  
+  if (!useClaude && !useGemini && !useGrok && customChecked.length === 0) {
+    alert('⚠️ Debes seleccionar al menos una IA');
+    return;
+  }
+
+  const missingKeys = [];
+  if (useGemini && !localStorage.getItem('gemini_api_key')) missingKeys.push('Gemini');
+  if (useGrok && !localStorage.getItem('grok_api_key')) missingKeys.push('Grok');
+  
+  customChecked.forEach(aiKey => {
+    if (!localStorage.getItem(`${aiKey}_api_key`)) {
+      missingKeys.push(customAIs[aiKey].name);
+    }
+  });
+  
+  if (missingKeys.length > 0) {
+    alert(`⚠️ Faltan API keys para: ${missingKeys.join(', ')}`);
+    return;
+  }
+
+  const chatMessages = document.getElementById('chat-messages');
+  
+  const userMessageDiv = document.createElement('div');
+  userMessageDiv.className = 'chat-message user';
+  userMessageDiv.innerHTML = `
+    <div class="chat-bubble user">
+      ${message ? message : ''}
+      ${currentChatImage ? `<img src="data:image/png;base64,${currentChatImage}">` : ''}
+    </div>
+  `;
+  chatMessages.appendChild(userMessageDiv);
+
+  const loadingDiv = document.createElement('div');
+  loadingDiv.className = 'chat-loading';
+  loadingDiv.innerHTML = '⏳ Las IAs están pensando...';
+  chatMessages.appendChild(loadingDiv);
+  
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  input.value = '';
+  const imageToSend = currentChatImage;
+  removeChatImage();
+
+  const promises = [];
+  if (useClaude) promises.push(chatWithClaude(message, imageToSend));
+  if (useGemini) promises.push(chatWithGemini(message, imageToSend));
+  if (useGrok) promises.push(chatWithGrok(message, imageToSend));
+  
+  customChecked.forEach(aiKey => {
+    promises.push(chatWithCustomAI(aiKey, message, imageToSend));
+  });
+
+  const results = await Promise.all(promises);
+  loadingDiv.remove();
+
+  results.forEach(result => {
+    const aiMessageDiv = document.createElement('div');
+    aiMessageDiv.className = 'chat-message ai';
+    aiMessageDiv.innerHTML = `
+      <div class="chat-bubble ai">
+        <div class="ai-name">${result.icon} ${result.ai}</div>
+        ${result.success ? result.content : `<span style="color: #f44336;">❌ Error: ${result.content}</span>`}
+      </div>
+    `;
+    chatMessages.appendChild(aiMessageDiv);
+  });
+
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+async function chatWithClaude(message, imageBase64) {
+  try {
+    const content = [];
+    if (message) content.push({ type: 'text', text: message });
+    if (imageBase64) {
+      content.push({ 
+        type: 'image', 
+        source: { type: 'base64', media_type: 'image/png', data: imageBase64 }
+      });
+    }
+
+    const response = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 2048,
+        messages: [{ role: 'user', content }]
+      })
+    });
+    
+    if (!response.ok) throw new Error(`Error ${response.status}`);
+    const data = await response.json();
+    
+    return {
+      ai: 'Claude',
+      icon: '🧠',
+      content: data.content[0].text,
+      success: true
+    };
+  } catch (error) {
+    return { ai: 'Claude', icon: '🧠', content: error.message, success: false };
+  }
+}
+
+async function chatWithGemini(message, imageBase64) {
+  const key = localStorage.getItem('gemini_api_key');
+  
+  try {
+    const parts = [];
+    if (message) parts.push({ text: message });
+    if (imageBase64) {
+      parts.push({ inline_data: { mime_type: 'image/png', data: imageBase64 }});
+    }
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts }] })
+      }
+    );
+    
+    if (!response.ok) throw new Error(`Error ${response.status}`);
+    const data = await response.json();
+    
+    return {
+      ai: 'Gemini',
+      icon: '✨',
+      content: data.candidates[0].content.parts[0].text,
+      success: true
+    };
+  } catch (error) {
+    return { ai: 'Gemini', icon: '✨', content: error.message, success: false };
+  }
+}
+
+async function chatWithGrok(message, imageBase64) {
+  const key = localStorage.getItem('grok_api_key');
+  
+  try {
+    const content = [];
+    if (message) content.push({ type: 'text', text: message });
+    if (imageBase64) {
+      content.push({ type: 'image_url', image_url: { url: `data:image/png;base64,${imageBase64}` }});
+    }
+
+    const response = await fetch('https://api.x.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: 'grok-vision-beta',
+        messages: [{ role: 'user', content }],
+        max_tokens: 2048
+      })
+    });
+    
+    if (!response.ok) throw new Error(`Error ${response.status}`);
+    const data = await response.json();
+    
+    return {
+      ai: 'Grok',
+      icon: '🚀',
+      content: data.choices[0].message.content,
+      success: true
+    };
+  } catch (error) {
+    return { ai: 'Grok', icon: '🚀', content: error.message, success: false };
+  }
+}
+
+async function chatWithCustomAI(aiKey, message, imageBase64) {
+  const key = localStorage.getItem(`${aiKey}_api_key`);
+  const ai = customAIs[aiKey];
+  
+  try {
+    let response, body;
+    const headers = { 'Content-Type': 'application/json' };
+
+    if (ai.type === 'openai') {
+      headers['Authorization'] = `Bearer ${key}`;
+      const content = [];
+      if (message) content.push({ type: 'text', text: message });
+      if (imageBase64) {
+        content.push({ type: 'image_url', image_url: { url: `data:image/png;base64,${imageBase64}` }});
+      }
+      body = JSON.stringify({
+        model: ai.model,
+        messages: [{ role: 'user', content }],
+        max_tokens: 2048
+      });
+    } else if (ai.type === 'anthropic') {
+      headers['x-api-key'] = key;
+      headers['anthropic-version'] = '2023-06-01';
+      const content = [];
+      if (message) content.push({ type: 'text', text: message });
+      if (imageBase64) {
+        content.push({ 
+          type: 'image', 
+          source: { type: 'base64', media_type: 'image/png', data: imageBase64 }
+        });
+      }
+      body = JSON.stringify({
+        model: ai.model,
+        max_tokens: 2048,
+        messages: [{ role: 'user', content }]
+      });
+    } else if (ai.type === 'google') {
+      const parts = [];
+      if (message) parts.push({ text: message });
+      if (imageBase64) {
+        parts.push({ inline_data: { mime_type: 'image/png', data: imageBase64 }});
+      }
+      body = JSON.stringify({ contents: [{ parts }] });
+      ai.endpoint = `${ai.endpoint}?key=${key}`;
+    }
+
+    response = await fetch(ai.endpoint, {
+      method: 'POST',
+      headers,
+      body
+    });
+    
+    if (!response.ok) throw new Error(`Error ${response.status}`);
+    const data = await response.json();
+    
+    let content = 'Respuesta no parseada';
+    if (ai.type === 'openai') content = data.choices[0].message.content;
+    else if (ai.type === 'anthropic') content = data.content[0].text;
+    else if (ai.type === 'google') content = data.candidates[0].content.parts[0].text;
+
+    return { ai: ai.name, icon: ai.icon, content, success: true };
+  } catch (error) {
+    return { ai: ai.name, icon: ai.icon, content: error.message, success: false };
+  }
 }
 
 function toggleTheme() {

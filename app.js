@@ -312,8 +312,6 @@ async function sendChatMessage() {
 }
 
 async function chatWithClaude(message, imageBase64) {
-  const key = localStorage.getItem('claude_api_key');
-  
   try {
     const content = [];
     if (message) content.push({ type: 'text', text: message });
@@ -324,12 +322,10 @@ async function chatWithClaude(message, imageBase64) {
       });
     }
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('/api/claude', {
       method: 'POST',
       headers: { 
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         model: 'claude-3-5-sonnet-20241022',
@@ -362,14 +358,14 @@ async function chatWithGemini(message, imageBase64) {
       parts.push({ inline_data: { mime_type: 'image/png', data: imageBase64 }});
     }
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${key}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts }] })
-      }
-    );
+    const response = await fetch('/api/gemini', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-api-key': key
+      },
+      body: JSON.stringify({ contents: [{ parts }] })
+    });
     
     if (!response.ok) throw new Error(`Error ${response.status}`);
     const data = await response.json();
@@ -395,7 +391,7 @@ async function chatWithGrok(message, imageBase64) {
       content.push({ type: 'image_url', image_url: { url: `data:image/png;base64,${imageBase64}` }});
     }
 
-    const response = await fetch('https://api.x.ai/v1/chat/completions', {
+    const response = await fetch('/api/grok', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -503,10 +499,14 @@ async function chatWithCustomAI(aiKey, message, imageBase64) {
       ai.endpoint = `${ai.endpoint}?key=${key}`;
     }
 
-    response = await fetch(ai.endpoint, {
+    response = await fetch('/api/custom', {
       method: 'POST',
-      headers,
-      body
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        endpoint: ai.endpoint,
+        headers: headers,
+        body: JSON.parse(body)
+      })
     });
     
     if (!response.ok) throw new Error(`Error ${response.status}`);
@@ -736,12 +736,10 @@ async function testConnection(aiName) {
     let response;
     
     if (aiName === 'claude') {
-      response = await fetch('https://api.anthropic.com/v1/messages', {
+      response = await fetch('/api/claude', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': key,
-          'anthropic-version': '2023-06-01'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           model: 'claude-3-5-sonnet-20241022',
@@ -750,18 +748,19 @@ async function testConnection(aiName) {
         })
       });
     } else if (aiName === 'gemini') {
-      response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${key}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+      response = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-api-key': key
+        },
           body: JSON.stringify({
             contents: [{ parts: [{ text: 'test' }] }]
           })
         }
       );
     } else if (aiName === 'grok') {
-      response = await fetch('https://api.x.ai/v1/chat/completions', {
+      response = await fetch('/api/grok', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -803,42 +802,40 @@ async function testCustomConnection(aiKey) {
   try {
     let response;
     
+    let headers = { 'Content-Type': 'application/json' };
+    let body = {};
+
     if (ai.type === 'openai') {
-      response = await fetch(ai.endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${key}`
-        },
-        body: JSON.stringify({
-          model: ai.model,
-          messages: [{ role: 'user', content: 'test' }],
-          max_tokens: 10
-        })
-      });
+      headers['Authorization'] = `Bearer ${key}`;
+      body = {
+        model: ai.model,
+        messages: [{ role: 'user', content: 'test' }],
+        max_tokens: 10
+      };
     } else if (ai.type === 'anthropic') {
-      response = await fetch(ai.endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': key,
-          'anthropic-version': '2023-06-01'
-        },
-        body: JSON.stringify({
-          model: ai.model,
-          max_tokens: 10,
-          messages: [{ role: 'user', content: 'test' }]
-        })
-      });
+      headers['x-api-key'] = key;
+      headers['anthropic-version'] = '2023-06-01';
+      body = {
+        model: ai.model,
+        max_tokens: 10,
+        messages: [{ role: 'user', content: 'test' }]
+      };
     } else if (ai.type === 'google') {
-      response = await fetch(`${ai.endpoint}?key=${key}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: 'test' }] }]
-        })
-      });
+      body = {
+        contents: [{ parts: [{ text: 'test' }] }]
+      };
+      ai.endpoint = `${ai.endpoint}?key=${key}`;
     }
+
+    response = await fetch('/api/custom', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        endpoint: ai.endpoint,
+        headers: headers,
+        body: body
+      })
+    });
     
     if (response.ok) {
       updateStatus(aiKey, 'connected', '✅ Conectado');
@@ -943,15 +940,11 @@ async function captureAndAnalyze() {
 }
 
 async function analyzeWithClaude(imageBase64) {
-  const key = localStorage.getItem('claude_api_key');
-  
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('/api/claude', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         model: 'claude-3-5-sonnet-20241022',
@@ -999,13 +992,14 @@ async function analyzeWithGemini(imageBase64) {
   const key = localStorage.getItem('gemini_api_key');
   
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${key}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
+    const response = await fetch('/api/gemini', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-api-key': key
+      },
+      body: JSON.stringify({
+        contents: [{
             parts: [
               { text: 'Analiza esta pantalla en detalle. Si ves código, identifica posibles errores, bugs o mejoras. Si es una UI, sugiere mejoras de diseño. Si es otra cosa, describe lo que ves y da recomendaciones útiles.' },
               { inline_data: { mime_type: 'image/png', data: imageBase64 }}
@@ -1038,7 +1032,7 @@ async function analyzeWithGrok(imageBase64) {
   const key = localStorage.getItem('grok_api_key');
   
   try {
-    const response = await fetch('https://api.x.ai/v1/chat/completions', {
+    const response = await fetch('/api/grok', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1174,10 +1168,14 @@ async function analyzeWithCustomAI(aiKey, imageBase64) {
       ai.endpoint = `${ai.endpoint}?key=${key}`;
     }
 
-    response = await fetch(ai.endpoint, {
+    response = await fetch('/api/custom', {
       method: 'POST',
-      headers: headers,
-      body: body
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        endpoint: ai.endpoint,
+        headers: headers,
+        body: JSON.parse(body)
+      })
     });
     
     if (!response.ok) throw new Error(`Error ${response.status}`);

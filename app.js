@@ -238,17 +238,73 @@ async function sendChatMessage() {
   const results = await Promise.all(promises);
   loadingDiv.remove();
 
-  results.forEach(result => {
-    const aiMessageDiv = document.createElement('div');
-    aiMessageDiv.className = 'chat-message ai';
-    aiMessageDiv.innerHTML = `
-      <div class="chat-bubble ai">
-        <div class="ai-name">${result.icon} ${result.ai}</div>
-        ${result.success ? result.content : `<span style="color: #f44336;">❌ Error: ${result.content}</span>`}
-      </div>
+  // Si hay imagen, mostrarla grande arriba
+  if (imageToSend) {
+    const imageContainer = document.createElement('div');
+    imageContainer.className = 'main-image-container';
+    imageContainer.innerHTML = `
+      <h3>📸 Imagen Compartida</h3>
+      <img src="data:image/png;base64,${imageToSend}" alt="Imagen adjunta">
     `;
-    chatMessages.appendChild(aiMessageDiv);
-  });
+    chatMessages.appendChild(imageContainer);
+  }
+
+  // Si hay múltiples IAs (2+), usar layout columnar
+  if (results.length > 1) {
+    const columnsWrapper = document.createElement('div');
+    columnsWrapper.className = 'chat-message';
+    columnsWrapper.style.maxWidth = '100%';
+    columnsWrapper.style.alignSelf = 'stretch';
+    
+    const columnsContainer = document.createElement('div');
+    columnsContainer.className = 'responses-columns';
+    columnsContainer.setAttribute('data-ai-count', results.length);
+    
+    results.forEach(result => {
+      const column = document.createElement('div');
+      column.className = 'ai-column';
+      
+      const aiType = result.ai.toLowerCase().includes('claude') ? 'claude' :
+                     result.ai.toLowerCase().includes('gemini') ? 'gemini' :
+                     result.ai.toLowerCase().includes('grok') ? 'grok' :
+                     result.ai.toLowerCase().includes('local') ? 'local' : 'custom';
+      column.setAttribute('data-ai', aiType);
+      
+      const header = document.createElement('div');
+      header.className = 'ai-column-header';
+      header.innerHTML = `${result.icon} ${result.ai}`;
+      
+      const content = document.createElement('div');
+      content.className = 'ai-column-content';
+      
+      if (result.success) {
+        content.textContent = result.content;
+      } else {
+        content.className += ' error';
+        content.textContent = `❌ ERROR: ${result.content}`;
+      }
+      
+      column.appendChild(header);
+      column.appendChild(content);
+      columnsContainer.appendChild(column);
+    });
+    
+    columnsWrapper.appendChild(columnsContainer);
+    chatMessages.appendChild(columnsWrapper);
+  } else {
+    // Vista tradicional para 1 sola IA
+    results.forEach(result => {
+      const aiMessageDiv = document.createElement('div');
+      aiMessageDiv.className = 'chat-message ai';
+      aiMessageDiv.innerHTML = `
+        <div class="chat-bubble ai">
+          <div class="ai-name">${result.icon} ${result.ai}</div>
+          ${result.success ? result.content : `<span style="color: #f44336;">❌ Error: ${result.content}</span>`}
+        </div>
+      `;
+      chatMessages.appendChild(aiMessageDiv);
+    });
+  }
 
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
@@ -1133,31 +1189,86 @@ async function analyzeWithCustomAI(aiKey, imageBase64) {
 
 function displayResponses(results) {
   const container = document.getElementById('responses-container');
-  container.innerHTML = '<h2>Resultados del Análisis</h2><div class="responses-grid"></div>';
-  const grid = container.querySelector('.responses-grid');
+  container.innerHTML = '<h2>Resultados del Análisis</h2>';
   
-  results.forEach(result => {
-    const card = document.createElement('div');
-    card.className = 'response-card';
+  // Si hay captura, mostrarla grande arriba
+  if (lastCapture) {
+    const imageContainer = document.createElement('div');
+    imageContainer.className = 'main-image-container';
+    imageContainer.innerHTML = `
+      <h3>📸 Captura Analizada</h3>
+      <img src="data:image/png;base64,${lastCapture}" alt="Captura de pantalla">
+    `;
+    container.appendChild(imageContainer);
+  }
+  
+  // Si hay múltiples IAs (2+), usar layout columnar
+  if (results.length > 1) {
+    const columnsContainer = document.createElement('div');
+    columnsContainer.className = 'responses-columns';
+    columnsContainer.setAttribute('data-ai-count', results.length);
     
-    const header = document.createElement('div');
-    header.className = 'response-header';
-    header.innerHTML = `${result.icon} ${result.ai}`;
+    results.forEach(result => {
+      const column = document.createElement('div');
+      column.className = 'ai-column';
+      
+      // Asignar tipo de IA para colores distintivos
+      const aiType = result.ai.toLowerCase().includes('claude') ? 'claude' :
+                     result.ai.toLowerCase().includes('gemini') ? 'gemini' :
+                     result.ai.toLowerCase().includes('grok') ? 'grok' :
+                     result.ai.toLowerCase().includes('local') ? 'local' : 'custom';
+      column.setAttribute('data-ai', aiType);
+      
+      const header = document.createElement('div');
+      header.className = 'ai-column-header';
+      header.innerHTML = `${result.icon} ${result.ai}`;
+      
+      const content = document.createElement('div');
+      content.className = 'ai-column-content';
+      
+      if (result.success) {
+        content.textContent = result.content;
+      } else {
+        content.className += ' error';
+        content.textContent = `❌ ERROR: ${result.content}`;
+      }
+      
+      column.appendChild(header);
+      column.appendChild(content);
+      columnsContainer.appendChild(column);
+    });
     
-    const content = document.createElement('div');
-    content.className = 'response-content';
+    container.appendChild(columnsContainer);
+  } else {
+    // Vista tradicional para 1 sola IA
+    const grid = document.createElement('div');
+    grid.className = 'responses-grid';
     
-    if (result.success) {
-      content.innerHTML = result.content;
-    } else {
-      content.className += ' error-message';
-      content.textContent = `❌ ERROR: ${result.content}`;
-    }
+    results.forEach(result => {
+      const card = document.createElement('div');
+      card.className = 'response-card';
+      
+      const header = document.createElement('div');
+      header.className = 'response-header';
+      header.innerHTML = `${result.icon} ${result.ai}`;
+      
+      const content = document.createElement('div');
+      content.className = 'response-content';
+      
+      if (result.success) {
+        content.innerHTML = result.content;
+      } else {
+        content.className += ' error-message';
+        content.textContent = `❌ ERROR: ${result.content}`;
+      }
+      
+      card.appendChild(header);
+      card.appendChild(content);
+      grid.appendChild(card);
+    });
     
-    card.appendChild(header);
-    card.appendChild(content);
-    grid.appendChild(card);
-  });
+    container.appendChild(grid);
+  }
 }
 
 function exportResults() {

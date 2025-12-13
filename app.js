@@ -176,6 +176,10 @@ async function sendChatMessage() {
   const useClaude = document.getElementById('chat-claude').checked;
   const useGemini = document.getElementById('chat-gemini').checked;
   const useGrok = document.getElementById('chat-grok').checked;
+  const useDeepSeek = document.getElementById('chat-deepseek').checked;
+  const useOpenAI = document.getElementById('chat-openai').checked;
+  const useMistral = document.getElementById('chat-mistral').checked;
+  const usePerplexity = document.getElementById('chat-perplexity').checked;
   const useLocal = document.getElementById('chat-local').checked;
   
   const customChecked = Object.keys(customAIs).filter(aiKey => {
@@ -183,7 +187,7 @@ async function sendChatMessage() {
     return checkbox && checkbox.checked;
   });
   
-  if (!useClaude && !useGemini && !useGrok && !useLocal && customChecked.length === 0) {
+  if (!useClaude && !useGemini && !useGrok && !useDeepSeek && !useOpenAI && !useMistral && !usePerplexity && !useLocal && customChecked.length === 0) {
     alert('⚠️ Debes seleccionar al menos una IA');
     return;
   }
@@ -191,6 +195,10 @@ async function sendChatMessage() {
   const missingKeys = [];
   if (useGemini && !localStorage.getItem('gemini_api_key')) missingKeys.push('Gemini');
   if (useGrok && !localStorage.getItem('grok_api_key')) missingKeys.push('Grok');
+  if (useDeepSeek && !localStorage.getItem('deepseek_api_key')) missingKeys.push('DeepSeek');
+  if (useOpenAI && !localStorage.getItem('openai_api_key')) missingKeys.push('GPT-4 Vision');
+  if (useMistral && !localStorage.getItem('mistral_api_key')) missingKeys.push('Pixtral');
+  if (usePerplexity && !localStorage.getItem('perplexity_api_key')) missingKeys.push('Perplexity');
   if (useLocal && !localStorage.getItem('local_endpoint')) missingKeys.push('Mi IA Local (configura el endpoint)');
   
   customChecked.forEach(aiKey => {
@@ -231,6 +239,10 @@ async function sendChatMessage() {
   if (useClaude) promises.push(chatWithClaude(message, imageToSend));
   if (useGemini) promises.push(chatWithGemini(message, imageToSend));
   if (useGrok) promises.push(chatWithGrok(message, imageToSend));
+  if (useDeepSeek) promises.push(chatWithDeepSeek(message, imageToSend));
+  if (useOpenAI) promises.push(chatWithOpenAI(message, imageToSend));
+  if (useMistral) promises.push(chatWithMistral(message, imageToSend));
+  if (usePerplexity) promises.push(chatWithPerplexity(message, imageToSend));
   if (useLocal) promises.push(chatWithLocal(message, imageToSend));
   
   customChecked.forEach(aiKey => {
@@ -453,6 +465,126 @@ async function chatWithLocal(message, imageBase64) {
   }
 }
 
+async function chatWithDeepSeek(message, imageBase64) {
+  const key = localStorage.getItem('deepseek_api_key');
+  
+  try {
+    const content = [];
+    if (message) content.push({ type: 'text', text: message });
+    if (imageBase64) content.push({ type: 'image_url', image_url: { url: `data:image/png;base64,${imageBase64}` }});
+
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-vl',
+        messages: [{ role: 'user', content }],
+        max_tokens: 2048
+      })
+    });
+    
+    if (!response.ok) throw new Error(`Error ${response.status}`);
+    const data = await response.json();
+    
+    return { ai: 'DeepSeek', icon: '🔮', content: data.choices[0].message.content, success: true };
+  } catch (error) {
+    return { ai: 'DeepSeek', icon: '🔮', content: error.message, success: false };
+  }
+}
+
+async function chatWithOpenAI(message, imageBase64) {
+  const key = localStorage.getItem('openai_api_key');
+  
+  try {
+    const content = [];
+    if (message) content.push({ type: 'text', text: message });
+    if (imageBase64) content.push({ type: 'image_url', image_url: { url: `data:image/png;base64,${imageBase64}` }});
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [{ role: 'user', content }],
+        max_tokens: 2048
+      })
+    });
+    
+    if (!response.ok) throw new Error(`Error ${response.status}`);
+    const data = await response.json();
+    
+    return { ai: 'GPT-4 Vision', icon: '🤖', content: data.choices[0].message.content, success: true };
+  } catch (error) {
+    return { ai: 'GPT-4 Vision', icon: '🤖', content: error.message, success: false };
+  }
+}
+
+async function chatWithMistral(message, imageBase64) {
+  const key = localStorage.getItem('mistral_api_key');
+  
+  try {
+    const content = [];
+    if (message) content.push({ type: 'text', text: message });
+    if (imageBase64) content.push({ type: 'image_url', image_url: { url: `data:image/png;base64,${imageBase64}` }});
+
+    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: 'pixtral-12b-2409',
+        messages: [{ role: 'user', content }],
+        max_tokens: 2048
+      })
+    });
+    
+    if (!response.ok) throw new Error(`Error ${response.status}`);
+    const data = await response.json();
+    
+    return { ai: 'Pixtral', icon: '🌟', content: data.choices[0].message.content, success: true };
+  } catch (error) {
+    return { ai: 'Pixtral', icon: '🌟', content: error.message, success: false };
+  }
+}
+
+async function chatWithPerplexity(message, imageBase64) {
+  const key = localStorage.getItem('perplexity_api_key');
+  
+  try {
+    const content = [];
+    if (message) content.push({ type: 'text', text: message });
+    if (imageBase64) content.push({ type: 'image_url', image_url: { url: `data:image/png;base64,${imageBase64}` }});
+
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: 'llama-3.2-90b-vision-instruct',
+        messages: [{ role: 'user', content }],
+        max_tokens: 2048
+      })
+    });
+    
+    if (!response.ok) throw new Error(`Error ${response.status}`);
+    const data = await response.json();
+    
+    return { ai: 'Perplexity', icon: '🔍', content: data.choices[0].message.content, success: true };
+  } catch (error) {
+    return { ai: 'Perplexity', icon: '🔍', content: error.message, success: false };
+  }
+}
+
 async function chatWithCustomAI(aiKey, message, imageBase64) {
   const key = localStorage.getItem(`${aiKey}_api_key`);
   const ai = customAIs[aiKey];
@@ -638,7 +770,7 @@ function clearLocalConfig() {
 }
 
 function loadKeysStatus() {
-  ['claude', 'gemini', 'grok'].forEach(aiKey => {
+  ['claude', 'gemini', 'grok', 'deepseek', 'openai', 'mistral', 'perplexity'].forEach(aiKey => {
     const key = localStorage.getItem(`${aiKey}_api_key`);
     const input = document.getElementById(`${aiKey}-key`);
     
@@ -675,6 +807,152 @@ function updateStatus(aiKey, statusClass, text) {
   if (!badge || !container) return;
   
   badge.className = `status-badge ${statusClass}`;
+
+
+async function analyzeWithDeepSeek(imageBase64) {
+  const key = localStorage.getItem('deepseek_api_key');
+  
+  if (!key) {
+    return { ai: 'DeepSeek', icon: '🔮', content: 'Error: API key no configurada', success: false };
+  }
+  
+  try {
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-vl',
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'text', text: 'Analiza esta pantalla en detalle. Si ves código, identifica posibles errores, bugs o mejoras. Si es una UI, sugiere mejoras de diseño. Si es otra cosa, describe lo que ves y da recomendaciones útiles.' },
+            { type: 'image_url', image_url: { url: `data:image/png;base64,${imageBase64}` }}
+          ]
+        }],
+        max_tokens: 1024
+      })
+    });
+    
+    if (!response.ok) throw new Error(`Error ${response.status}`);
+    const data = await response.json();
+    
+    return { ai: 'DeepSeek', icon: '🔮', content: data.choices[0].message.content, success: true };
+  } catch (error) {
+    return { ai: 'DeepSeek', icon: '🔮', content: `Error: ${error.message}`, success: false };
+  }
+}
+
+async function analyzeWithOpenAI(imageBase64) {
+  const key = localStorage.getItem('openai_api_key');
+  
+  if (!key) {
+    return { ai: 'GPT-4 Vision', icon: '🤖', content: 'Error: API key no configurada', success: false };
+  }
+  
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'text', text: 'Analiza esta pantalla en detalle. Si ves código, identifica posibles errores, bugs o mejoras. Si es una UI, sugiere mejoras de diseño. Si es otra cosa, describe lo que ves y da recomendaciones útiles.' },
+            { type: 'image_url', image_url: { url: `data:image/png;base64,${imageBase64}` }}
+          ]
+        }],
+        max_tokens: 1024
+      })
+    });
+    
+    if (!response.ok) throw new Error(`Error ${response.status}`);
+    const data = await response.json();
+    
+    return { ai: 'GPT-4 Vision', icon: '🤖', content: data.choices[0].message.content, success: true };
+  } catch (error) {
+    return { ai: 'GPT-4 Vision', icon: '🤖', content: `Error: ${error.message}`, success: false };
+  }
+}
+
+async function analyzeWithMistral(imageBase64) {
+  const key = localStorage.getItem('mistral_api_key');
+  
+  if (!key) {
+    return { ai: 'Pixtral', icon: '🌟', content: 'Error: API key no configurada', success: false };
+  }
+  
+  try {
+    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: 'pixtral-12b-2409',
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'text', text: 'Analiza esta pantalla en detalle. Si ves código, identifica posibles errores, bugs o mejoras. Si es una UI, sugiere mejoras de diseño. Si es otra cosa, describe lo que ves y da recomendaciones útiles.' },
+            { type: 'image_url', image_url: { url: `data:image/png;base64,${imageBase64}` }}
+          ]
+        }],
+        max_tokens: 1024
+      })
+    });
+    
+    if (!response.ok) throw new Error(`Error ${response.status}`);
+    const data = await response.json();
+    
+    return { ai: 'Pixtral', icon: '🌟', content: data.choices[0].message.content, success: true };
+  } catch (error) {
+    return { ai: 'Pixtral', icon: '🌟', content: `Error: ${error.message}`, success: false };
+  }
+}
+
+async function analyzeWithPerplexity(imageBase64) {
+  const key = localStorage.getItem('perplexity_api_key');
+  
+  if (!key) {
+    return { ai: 'Perplexity', icon: '🔍', content: 'Error: API key no configurada', success: false };
+  }
+  
+  try {
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: 'llama-3.2-90b-vision-instruct',
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'text', text: 'Analiza esta pantalla en detalle. Si ves código, identifica posibles errores, bugs o mejoras. Si es una UI, sugiere mejoras de diseño. Si es otra cosa, describe lo que ves y da recomendaciones útiles.' },
+            { type: 'image_url', image_url: { url: `data:image/png;base64,${imageBase64}` }}
+          ]
+        }],
+        max_tokens: 1024
+      })
+    });
+    
+    if (!response.ok) throw new Error(`Error ${response.status}`);
+    const data = await response.json();
+    
+    return { ai: 'Perplexity', icon: '🔍', content: data.choices[0].message.content, success: true };
+  } catch (error) {
+    return { ai: 'Perplexity', icon: '🔍', content: `Error: ${error.message}`, success: false };
+  }
+}
+
   badge.textContent = text;
   
   container.classList.remove('connected', 'error');
@@ -772,6 +1050,58 @@ async function testConnection(aiName) {
           max_tokens: 10
         })
       });
+    } else if (aiName === 'deepseek') {
+      response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${key}`
+        },
+        body: JSON.stringify({
+          model: 'deepseek-vl',
+          messages: [{ role: 'user', content: 'test' }],
+          max_tokens: 10
+        })
+      });
+    } else if (aiName === 'openai') {
+      response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${key}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages: [{ role: 'user', content: 'test' }],
+          max_tokens: 10
+        })
+      });
+    } else if (aiName === 'mistral') {
+      response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${key}`
+        },
+        body: JSON.stringify({
+          model: 'pixtral-12b-2409',
+          messages: [{ role: 'user', content: 'test' }],
+          max_tokens: 10
+        })
+      });
+    } else if (aiName === 'perplexity') {
+      response = await fetch('https://api.perplexity.ai/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${key}`
+        },
+        body: JSON.stringify({
+          model: 'llama-3.2-90b-vision-instruct',
+          messages: [{ role: 'user', content: 'test' }],
+          max_tokens: 10
+        })
+      });
     }
     
     if (response.ok) {
@@ -855,6 +1185,10 @@ async function captureAndAnalyze() {
   const useClaude = document.getElementById('use-claude').checked;
   const useGemini = document.getElementById('use-gemini').checked;
   const useGrok = document.getElementById('use-grok').checked;
+  const useDeepSeek = document.getElementById('use-deepseek').checked;
+  const useOpenAI = document.getElementById('use-openai').checked;
+  const useMistral = document.getElementById('use-mistral').checked;
+  const usePerplexity = document.getElementById('use-perplexity').checked;
   const useLocal = document.getElementById('use-local').checked;
   
   const customChecked = Object.keys(customAIs).filter(aiKey => {
@@ -862,7 +1196,7 @@ async function captureAndAnalyze() {
     return checkbox && checkbox.checked;
   });
   
-  if (!useClaude && !useGemini && !useGrok && !useLocal && customChecked.length === 0) {
+  if (!useClaude && !useGemini && !useGrok && !useDeepSeek && !useOpenAI && !useMistral && !usePerplexity && !useLocal && customChecked.length === 0) {
     alert('⚠️ Debes seleccionar al menos una IA');
     return;
   }
@@ -870,6 +1204,10 @@ async function captureAndAnalyze() {
   const missingKeys = [];
   if (useGemini && !localStorage.getItem('gemini_api_key')) missingKeys.push('Gemini');
   if (useGrok && !localStorage.getItem('grok_api_key')) missingKeys.push('Grok');
+  if (useDeepSeek && !localStorage.getItem('deepseek_api_key')) missingKeys.push('DeepSeek');
+  if (useOpenAI && !localStorage.getItem('openai_api_key')) missingKeys.push('GPT-4 Vision');
+  if (useMistral && !localStorage.getItem('mistral_api_key')) missingKeys.push('Pixtral');
+  if (usePerplexity && !localStorage.getItem('perplexity_api_key')) missingKeys.push('Perplexity');
   if (useLocal && !localStorage.getItem('local_endpoint')) missingKeys.push('Mi IA Local (configura el endpoint)');
   
   customChecked.forEach(aiKey => {
@@ -922,6 +1260,10 @@ async function captureAndAnalyze() {
     if (useClaude) promises.push(analyzeWithClaude(imageData));
     if (useGemini) promises.push(analyzeWithGemini(imageData));
     if (useGrok) promises.push(analyzeWithGrok(imageData));
+    if (useDeepSeek) promises.push(analyzeWithDeepSeek(imageData));
+    if (useOpenAI) promises.push(analyzeWithOpenAI(imageData));
+    if (useMistral) promises.push(analyzeWithMistral(imageData));
+    if (usePerplexity) promises.push(analyzeWithPerplexity(imageData));
     if (useLocal) promises.push(analyzeWithLocal(imageData));
     
     customChecked.forEach(aiKey => {

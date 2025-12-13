@@ -47,6 +47,22 @@
             <span>🚀 Grok (xAI)</span>
           </label>
           <label class="checkbox-item">
+            <input type="checkbox" id="use-deepseek">
+            <span>🔮 DeepSeek</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="use-openai">
+            <span>🤖 GPT-4 Vision</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="use-mistral">
+            <span>🌟 Pixtral</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="use-perplexity">
+            <span>🔍 Perplexity</span>
+          </label>
+          <label class="checkbox-item">
             <input type="checkbox" id="use-local">
             <span>🖥️ Mi IA Local</span>
           </label>
@@ -78,6 +94,22 @@
           <label class="checkbox-item">
             <input type="checkbox" id="chat-grok">
             <span>🚀 Grok</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="chat-deepseek">
+            <span>🔮 DeepSeek</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="chat-openai">
+            <span>🤖 GPT-4 Vision</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="chat-mistral">
+            <span>🌟 Pixtral</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="chat-perplexity">
+            <span>🔍 Perplexity</span>
           </label>
           <label class="checkbox-item">
             <input type="checkbox" id="chat-local">
@@ -178,6 +210,94 @@
                 <button type="submit">💾 Guardar</button>
                 <button type="button" onclick="testConnection('grok')" class="success">🔍 Probar Conexión</button>
                 <button type="button" onclick="clearKey('grok')" class="secondary">🗑️ Borrar</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- DEEPSEEK -->
+          <div class="ai-item" id="deepseek-config">
+            <div class="ai-header">
+              <div class="ai-name">
+                🔮 DeepSeek (DeepSeek AI)
+                <span class="status-badge disconnected" id="deepseek-status">No configurado</span>
+              </div>
+            </div>
+            <form onsubmit="event.preventDefault(); saveKey('deepseek');">
+              <div class="input-group">
+                <label for="deepseek-key">API Key:</label>
+                <input type="password" id="deepseek-key" placeholder="sk-..." autocomplete="off">
+                <p class="help-text">Obtén tu key en: <a href="https://platform.deepseek.com" target="_blank">platform.deepseek.com</a></p>
+              </div>
+              <div class="ai-actions">
+                <button type="submit">💾 Guardar</button>
+                <button type="button" onclick="testConnection('deepseek')" class="success">🔍 Probar Conexión</button>
+                <button type="button" onclick="clearKey('deepseek')" class="secondary">🗑️ Borrar</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- OPENAI GPT-4 VISION -->
+          <div class="ai-item" id="openai-config">
+            <div class="ai-header">
+              <div class="ai-name">
+                🤖 GPT-4 Vision (OpenAI)
+                <span class="status-badge disconnected" id="openai-status">No configurado</span>
+              </div>
+            </div>
+            <form onsubmit="event.preventDefault(); saveKey('openai');">
+              <div class="input-group">
+                <label for="openai-key">API Key:</label>
+                <input type="password" id="openai-key" placeholder="sk-..." autocomplete="off">
+                <p class="help-text">Obtén tu key en: <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a></p>
+              </div>
+              <div class="ai-actions">
+                <button type="submit">💾 Guardar</button>
+                <button type="button" onclick="testConnection('openai')" class="success">🔍 Probar Conexión</button>
+                <button type="button" onclick="clearKey('openai')" class="secondary">🗑️ Borrar</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- MISTRAL PIXTRAL -->
+          <div class="ai-item" id="mistral-config">
+            <div class="ai-header">
+              <div class="ai-name">
+                🌟 Pixtral (Mistral AI)
+                <span class="status-badge disconnected" id="mistral-status">No configurado</span>
+              </div>
+            </div>
+            <form onsubmit="event.preventDefault(); saveKey('mistral');">
+              <div class="input-group">
+                <label for="mistral-key">API Key:</label>
+                <input type="password" id="mistral-key" placeholder="..." autocomplete="off">
+                <p class="help-text">Obtén tu key en: <a href="https://console.mistral.ai" target="_blank">console.mistral.ai</a></p>
+              </div>
+              <div class="ai-actions">
+                <button type="submit">💾 Guardar</button>
+                <button type="button" onclick="testConnection('mistral')" class="success">🔍 Probar Conexión</button>
+                <button type="button" onclick="clearKey('mistral')" class="secondary">🗑️ Borrar</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- PERPLEXITY -->
+          <div class="ai-item" id="perplexity-config">
+            <div class="ai-header">
+              <div class="ai-name">
+                🔍 Perplexity (Perplexity AI)
+                <span class="status-badge disconnected" id="perplexity-status">No configurado</span>
+              </div>
+            </div>
+            <form onsubmit="event.preventDefault(); saveKey('perplexity');">
+              <div class="input-group">
+                <label for="perplexity-key">API Key:</label>
+                <input type="password" id="perplexity-key" placeholder="pplx-..." autocomplete="off">
+                <p class="help-text">Obtén tu key en: <a href="https://www.perplexity.ai/settings/api" target="_blank">perplexity.ai/settings/api</a></p>
+              </div>
+              <div class="ai-actions">
+                <button type="submit">💾 Guardar</button>
+                <button type="button" onclick="testConnection('perplexity')" class="success">🔍 Probar Conexión</button>
+                <button type="button" onclick="clearKey('perplexity')" class="secondary">🗑️ Borrar</button>
               </div>
             </form>
           </div>

@@ -82,11 +82,16 @@
           <div id="chat-messages" class="chat-messages"></div>
           <div class="chat-input-container">
             <input type="file" id="chat-image" accept="image/*" style="display: none;" onchange="handleChatImageSelect(event)">
-            <button onclick="document.getElementById('chat-image').click()" class="secondary" style="margin-bottom: 10px;">
-              📎 Adjuntar Imagen
-            </button>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+              <button onclick="captureToChatImage()" class="capture-to-chat" style="flex: 1;">
+                📸 Capturar Pantalla
+              </button>
+              <button onclick="document.getElementById('chat-image').click()" class="secondary" style="flex: 1;">
+                📎 Adjuntar Imagen
+              </button>
+            </div>
             <div id="chat-image-preview"></div>
-            <textarea id="chat-input" placeholder="Escribe tu pregunta aquí... (con o sin imagen)" rows="3"></textarea>
+            <textarea id="chat-input" placeholder="Escribe tu pregunta aquí... (opcional con captura o imagen)" rows="3"></textarea>
             <button onclick="sendChatMessage()" class="success">💬 Enviar</button>
           </div>
         </div>

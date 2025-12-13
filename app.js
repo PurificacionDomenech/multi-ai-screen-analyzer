@@ -122,6 +122,46 @@ function removeChatImage() {
   document.getElementById('chat-image').value = '';
 }
 
+async function captureToChatImage() {
+  try {
+    const stream = await navigator.mediaDevices.getDisplayMedia({ 
+      video: { mediaSource: 'screen' }
+    });
+    
+    const video = document.createElement('video');
+    video.srcObject = stream;
+    video.autoplay = true;
+    
+    await new Promise(resolve => {
+      video.onloadedmetadata = () => {
+        video.play();
+        resolve();
+      };
+    });
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    
+    stream.getTracks().forEach(track => track.stop());
+    
+    const imageData = canvas.toDataURL('image/png').split(',')[1];
+    currentChatImage = imageData;
+    
+    const preview = document.getElementById('chat-image-preview');
+    preview.innerHTML = `
+      <img src="data:image/png;base64,${imageData}">
+      <button onclick="removeChatImage()">✕ Quitar</button>
+    `;
+    preview.classList.add('active');
+    
+  } catch (error) {
+    console.error('Error al capturar:', error);
+    alert(`❌ Error al capturar pantalla: ${error.message}`);
+  }
+}
+
 async function sendChatMessage() {
   const input = document.getElementById('chat-input');
   const message = input.value.trim();

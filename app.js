@@ -14,6 +14,9 @@ window.addEventListener('DOMContentLoaded', () => {
   const video = document.getElementById('intro-video');
   const overlay = document.getElementById('video-overlay');
 
+  // Configurar velocidad de reproducción a 2x
+  video.playbackRate = 2.0;
+
   video.onended = () => {
     overlay.style.display = 'none';
     document.body.style.overflow = 'auto';

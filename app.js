@@ -174,13 +174,14 @@ async function sendChatMessage() {
   const useClaude = document.getElementById('chat-claude').checked;
   const useGemini = document.getElementById('chat-gemini').checked;
   const useGrok = document.getElementById('chat-grok').checked;
+  const useLocal = document.getElementById('chat-local').checked;
   
   const customChecked = Object.keys(customAIs).filter(aiKey => {
     const checkbox = document.getElementById(`chat-${aiKey}`);
     return checkbox && checkbox.checked;
   });
   
-  if (!useClaude && !useGemini && !useGrok && customChecked.length === 0) {
+  if (!useClaude && !useGemini && !useGrok && !useLocal && customChecked.length === 0) {
     alert('⚠️ Debes seleccionar al menos una IA');
     return;
   }
@@ -188,6 +189,7 @@ async function sendChatMessage() {
   const missingKeys = [];
   if (useGemini && !localStorage.getItem('gemini_api_key')) missingKeys.push('Gemini');
   if (useGrok && !localStorage.getItem('grok_api_key')) missingKeys.push('Grok');
+  if (useLocal && !localStorage.getItem('local_endpoint')) missingKeys.push('Mi IA Local (configura el endpoint)');
   
   customChecked.forEach(aiKey => {
     if (!localStorage.getItem(`${aiKey}_api_key`)) {
@@ -227,6 +229,7 @@ async function sendChatMessage() {
   if (useClaude) promises.push(chatWithClaude(message, imageToSend));
   if (useGemini) promises.push(chatWithGemini(message, imageToSend));
   if (useGrok) promises.push(chatWithGrok(message, imageToSend));
+  if (useLocal) promises.push(chatWithLocal(message, imageToSend));
   
   customChecked.forEach(aiKey => {
     promises.push(chatWithCustomAI(aiKey, message, imageToSend));
@@ -352,6 +355,41 @@ async function chatWithGrok(message, imageBase64) {
     };
   } catch (error) {
     return { ai: 'Grok', icon: '🚀', content: error.message, success: false };
+  }
+}
+
+async function chatWithLocal(message, imageBase64) {
+  const endpoint = localStorage.getItem('local_endpoint');
+  const model = localStorage.getItem('local_model') || 'local-model';
+  
+  try {
+    const content = [];
+    if (message) content.push({ type: 'text', text: message });
+    if (imageBase64) {
+      content.push({ type: 'image_url', image_url: { url: `data:image/png;base64,${imageBase64}` }});
+    }
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: model,
+        messages: [{ role: 'user', content }],
+        max_tokens: 2048
+      })
+    });
+    
+    if (!response.ok) throw new Error(`Error ${response.status}`);
+    const data = await response.json();
+    
+    return {
+      ai: 'Mi IA Local',
+      icon: '🖥️',
+      content: data.choices[0].message.content,
+      success: true
+    };
+  } catch (error) {
+    return { ai: 'Mi IA Local', icon: '🖥️', content: error.message, success: false };
   }
 }
 
@@ -509,6 +547,32 @@ function clearKey(aiKey) {
   }
 }
 
+function saveLocalConfig() {
+  const endpoint = document.getElementById('local-endpoint').value.trim();
+  const model = document.getElementById('local-model').value.trim();
+  
+  if (!endpoint) {
+    alert('⚠️ Por favor ingresa un endpoint válido');
+    return;
+  }
+  
+  localStorage.setItem('local_endpoint', endpoint);
+  localStorage.setItem('local_model', model || 'local-model');
+  updateStatus('local', 'connected', 'Configurado');
+  alert('✅ Configuración de IA Local guardada correctamente');
+}
+
+function clearLocalConfig() {
+  if (confirm('¿Seguro que quieres borrar la configuración de IA Local?')) {
+    localStorage.removeItem('local_endpoint');
+    localStorage.removeItem('local_model');
+    document.getElementById('local-endpoint').value = 'http://localhost:1234/v1/chat/completions';
+    document.getElementById('local-model').value = 'local-model';
+    updateStatus('local', 'disconnected', 'No configurado');
+    alert('🗑️ Configuración borrada');
+  }
+}
+
 function loadKeysStatus() {
   ['claude', 'gemini', 'grok'].forEach(aiKey => {
     const key = localStorage.getItem(`${aiKey}_api_key`);
@@ -519,6 +583,15 @@ function loadKeysStatus() {
       updateStatus(aiKey, 'connected', 'Configurado');
     }
   });
+
+  // Cargar configuración de IA Local
+  const localEndpoint = localStorage.getItem('local_endpoint');
+  const localModel = localStorage.getItem('local_model');
+  if (localEndpoint) {
+    document.getElementById('local-endpoint').value = localEndpoint;
+    document.getElementById('local-model').value = localModel || 'local-model';
+    updateStatus('local', 'connected', 'Configurado');
+  }
 
   Object.keys(customAIs).forEach(aiKey => {
     const key = localStorage.getItem(`${aiKey}_api_key`);
@@ -549,6 +622,43 @@ function updateStatus(aiKey, statusClass, text) {
 }
 
 async function testConnection(aiName) {
+  if (aiName === 'local') {
+    const endpoint = localStorage.getItem('local_endpoint');
+    
+    if (!endpoint) {
+      alert('❌ Primero debes guardar la configuración de IA Local');
+      return;
+    }
+    
+    updateStatus('local', 'testing', 'Probando...');
+    
+    try {
+      const model = localStorage.getItem('local_model') || 'local-model';
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: model,
+          messages: [{ role: 'user', content: 'test' }],
+          max_tokens: 10
+        })
+      });
+      
+      if (response.ok) {
+        updateStatus('local', 'connected', '✅ Conectado');
+        alert('✅ Conexión exitosa con IA Local');
+      } else {
+        const error = await response.text();
+        updateStatus('local', 'disconnected', '❌ Error');
+        alert(`❌ Error de conexión: ${error.substring(0, 200)}\n\n¿Está el servidor corriendo en ${endpoint}?`);
+      }
+    } catch (error) {
+      updateStatus('local', 'disconnected', '❌ Error');
+      alert(`❌ Error: ${error.message}\n\nAsegúrate de que LM Studio o Ollama esté corriendo con el servidor API activado.`);
+    }
+    return;
+  }
+  
   const key = localStorage.getItem(`${aiName}_api_key`);
   
   if (!key) {
@@ -674,13 +784,14 @@ async function captureAndAnalyze() {
   const useClaude = document.getElementById('use-claude').checked;
   const useGemini = document.getElementById('use-gemini').checked;
   const useGrok = document.getElementById('use-grok').checked;
+  const useLocal = document.getElementById('use-local').checked;
   
   const customChecked = Object.keys(customAIs).filter(aiKey => {
     const checkbox = document.getElementById(`use-${aiKey}`);
     return checkbox && checkbox.checked;
   });
   
-  if (!useClaude && !useGemini && !useGrok && customChecked.length === 0) {
+  if (!useClaude && !useGemini && !useGrok && !useLocal && customChecked.length === 0) {
     alert('⚠️ Debes seleccionar al menos una IA');
     return;
   }
@@ -688,6 +799,7 @@ async function captureAndAnalyze() {
   const missingKeys = [];
   if (useGemini && !localStorage.getItem('gemini_api_key')) missingKeys.push('Gemini');
   if (useGrok && !localStorage.getItem('grok_api_key')) missingKeys.push('Grok');
+  if (useLocal && !localStorage.getItem('local_endpoint')) missingKeys.push('Mi IA Local (configura el endpoint)');
   
   customChecked.forEach(aiKey => {
     if (!localStorage.getItem(`${aiKey}_api_key`)) {
@@ -696,7 +808,7 @@ async function captureAndAnalyze() {
   });
   
   if (missingKeys.length > 0) {
-    alert(`⚠️ Faltan API keys para: ${missingKeys.join(', ')}\n\nVe a Configuración para añadirlas.`);
+    alert(`⚠️ Faltan configuraciones para: ${missingKeys.join(', ')}\n\nVe a Configuración para añadirlas.`);
     return;
   }
   
@@ -739,6 +851,7 @@ async function captureAndAnalyze() {
     if (useClaude) promises.push(analyzeWithClaude(imageData));
     if (useGemini) promises.push(analyzeWithGemini(imageData));
     if (useGrok) promises.push(analyzeWithGrok(imageData));
+    if (useLocal) promises.push(analyzeWithLocal(imageData));
     
     customChecked.forEach(aiKey => {
       promises.push(analyzeWithCustomAI(aiKey, imageData));
@@ -879,6 +992,46 @@ async function analyzeWithGrok(imageBase64) {
     return {
       ai: 'Grok',
       icon: '🚀',
+      content: `Error: ${error.message}`,
+      success: false
+    };
+  }
+}
+
+async function analyzeWithLocal(imageBase64) {
+  const endpoint = localStorage.getItem('local_endpoint');
+  const model = localStorage.getItem('local_model') || 'local-model';
+  
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: model,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'text', text: 'Analiza esta pantalla en detalle. Si ves código, identifica posibles errores, bugs o mejoras. Si es una UI, sugiere mejoras de diseño. Si es otra cosa, describe lo que ves y da recomendaciones útiles.' },
+            { type: 'image_url', image_url: { url: `data:image/png;base64,${imageBase64}` }}
+          ]
+        }],
+        max_tokens: 1024
+      })
+    });
+    
+    if (!response.ok) throw new Error(`Error ${response.status}`);
+    
+    const data = await response.json();
+    return {
+      ai: 'Mi IA Local',
+      icon: '🖥️',
+      content: data.choices[0].message.content,
+      success: true
+    };
+  } catch (error) {
+    return {
+      ai: 'Mi IA Local',
+      icon: '🖥️',
       content: `Error: ${error.message}`,
       success: false
     };

@@ -46,6 +46,10 @@
             <input type="checkbox" id="use-grok">
             <span>🚀 Grok (xAI)</span>
           </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="use-local">
+            <span>🖥️ Mi IA Local</span>
+          </label>
           <div id="custom-ai-checkboxes"></div>
         </div>
 
@@ -74,6 +78,10 @@
           <label class="checkbox-item">
             <input type="checkbox" id="chat-grok">
             <span>🚀 Grok</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="chat-local">
+            <span>🖥️ Mi IA Local</span>
           </label>
           <div id="chat-custom-ai-checkboxes"></div>
         </div>
@@ -165,6 +173,39 @@
               <button onclick="saveKey('grok')">💾 Guardar</button>
               <button onclick="testConnection('grok')" class="success">🔍 Probar Conexión</button>
               <button onclick="clearKey('grok')" class="secondary">🗑️ Borrar</button>
+            </div>
+          </div>
+
+          <!-- LOCAL (LM Studio / Ollama) -->
+          <div class="ai-item" id="local-config">
+            <div class="ai-header">
+              <div class="ai-name">
+                🖥️ Mi IA Local (LM Studio / Ollama)
+                <span class="status-badge disconnected" id="local-status">No configurado</span>
+              </div>
+            </div>
+            <div class="info-box" style="margin-bottom: 15px; background: rgba(255, 152, 0, 0.1); border-left-color: #ff9800;">
+              <p style="margin: 0; font-size: 0.9rem;">
+                ⚠️ <strong>Asegúrate de tener LM Studio o Ollama corriendo localmente</strong> con el servidor API activado antes de usar esta opción.
+              </p>
+            </div>
+            <div class="input-group">
+              <label for="local-endpoint">Endpoint URL:</label>
+              <input type="text" id="local-endpoint" placeholder="http://localhost:1234/v1/chat/completions" value="http://localhost:1234/v1/chat/completions">
+              <p class="help-text">
+                LM Studio: <code>http://localhost:1234/v1/chat/completions</code><br>
+                Ollama: <code>http://localhost:11434/v1/chat/completions</code>
+              </p>
+            </div>
+            <div class="input-group">
+              <label for="local-model">Nombre del Modelo:</label>
+              <input type="text" id="local-model" placeholder="local-model" value="local-model">
+              <p class="help-text">Puedes usar cualquier nombre, el servidor local lo gestionará</p>
+            </div>
+            <div class="ai-actions">
+              <button onclick="saveLocalConfig()">💾 Guardar</button>
+              <button onclick="testConnection('local')" class="success">🔍 Probar Conexión</button>
+              <button onclick="clearLocalConfig()" class="secondary">🗑️ Borrar</button>
             </div>
           </div>
 

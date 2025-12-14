@@ -183,6 +183,7 @@ async function sendChatMessage() {
   const useOpenAI = document.getElementById('chat-openai').checked;
   const useMistral = document.getElementById('chat-mistral').checked;
   const usePerplexity = document.getElementById('chat-perplexity').checked;
+  const useManus = document.getElementById('chat-manus').checked;
   const useLocal = document.getElementById('chat-local').checked;
   
   const customChecked = Object.keys(customAIs).filter(aiKey => {
@@ -190,7 +191,7 @@ async function sendChatMessage() {
     return checkbox && checkbox.checked;
   });
   
-  if (!useClaude && !useGemini && !useGrok && !useDeepSeek && !useOpenAI && !useMistral && !usePerplexity && !useLocal && customChecked.length === 0) {
+  if (!useClaude && !useGemini && !useGrok && !useDeepSeek && !useOpenAI && !useMistral && !usePerplexity && !useManus && !useLocal && customChecked.length === 0) {
     alert('⚠️ Debes seleccionar al menos una IA');
     return;
   }
@@ -202,6 +203,7 @@ async function sendChatMessage() {
   if (useOpenAI && !localStorage.getItem('openai_api_key')) missingKeys.push('GPT-4 Vision');
   if (useMistral && !localStorage.getItem('mistral_api_key')) missingKeys.push('Pixtral');
   if (usePerplexity && !localStorage.getItem('perplexity_api_key')) missingKeys.push('Perplexity');
+  if (useManus && !localStorage.getItem('manus_api_key')) missingKeys.push('Manus');
   if (useLocal && !localStorage.getItem('local_endpoint')) missingKeys.push('Mi IA Local (configura el endpoint)');
   
   customChecked.forEach(aiKey => {
@@ -246,6 +248,7 @@ async function sendChatMessage() {
   if (useOpenAI) promises.push(chatWithOpenAI(message, imageToSend));
   if (useMistral) promises.push(chatWithMistral(message, imageToSend));
   if (usePerplexity) promises.push(chatWithPerplexity(message, imageToSend));
+  if (useManus) promises.push(chatWithManus(message, imageToSend));
   if (useLocal) promises.push(chatWithLocal(message, imageToSend));
   
   customChecked.forEach(aiKey => {
@@ -588,6 +591,36 @@ async function chatWithPerplexity(message, imageBase64) {
   }
 }
 
+async function chatWithManus(message, imageBase64) {
+  const key = localStorage.getItem('manus_api_key');
+  
+  try {
+    const content = [];
+    if (message) content.push({ type: 'text', text: message });
+    if (imageBase64) content.push({ type: 'image_url', image_url: { url: `data:image/png;base64,${imageBase64}` }});
+
+    const response = await fetch('https://api.manus.im/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: 'manus-vision',
+        messages: [{ role: 'user', content }],
+        max_tokens: 2048
+      })
+    });
+    
+    if (!response.ok) throw new Error(`Error ${response.status}`);
+    const data = await response.json();
+    
+    return { ai: 'Manus', icon: '🧙', content: data.choices[0].message.content, success: true };
+  } catch (error) {
+    return { ai: 'Manus', icon: '🧙', content: error.message, success: false };
+  }
+}
+
 async function chatWithCustomAI(aiKey, message, imageBase64) {
   const key = localStorage.getItem(`${aiKey}_api_key`);
   const ai = customAIs[aiKey];
@@ -773,7 +806,7 @@ function clearLocalConfig() {
 }
 
 function loadKeysStatus() {
-  ['claude', 'gemini', 'grok', 'deepseek', 'openai', 'mistral', 'perplexity'].forEach(aiKey => {
+  ['claude', 'gemini', 'grok', 'deepseek', 'openai', 'mistral', 'perplexity', 'manus'].forEach(aiKey => {
     const key = localStorage.getItem(`${aiKey}_api_key`);
     const input = document.getElementById(`${aiKey}-key`);
     
@@ -956,6 +989,42 @@ async function analyzeWithPerplexity(imageBase64) {
   }
 }
 
+async function analyzeWithManus(imageBase64) {
+  const key = localStorage.getItem('manus_api_key');
+  
+  if (!key) {
+    return { ai: 'Manus', icon: '🧙', content: 'Error: API key no configurada', success: false };
+  }
+  
+  try {
+    const response = await fetch('https://api.manus.im/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: 'manus-vision',
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'text', text: 'Analiza esta pantalla en detalle. Si ves código, identifica posibles errores, bugs o mejoras. Si es una UI, sugiere mejoras de diseño. Si es otra cosa, describe lo que ves y da recomendaciones útiles.' },
+            { type: 'image_url', image_url: { url: `data:image/png;base64,${imageBase64}` }}
+          ]
+        }],
+        max_tokens: 1024
+      })
+    });
+    
+    if (!response.ok) throw new Error(`Error ${response.status}`);
+    const data = await response.json();
+    
+    return { ai: 'Manus', icon: '🧙', content: data.choices[0].message.content, success: true };
+  } catch (error) {
+    return { ai: 'Manus', icon: '🧙', content: `Error: ${error.message}`, success: false };
+  }
+}
+
   badge.textContent = text;
   
   container.classList.remove('connected', 'error');
@@ -1105,6 +1174,19 @@ async function testConnection(aiName) {
           max_tokens: 10
         })
       });
+    } else if (aiName === 'manus') {
+      response = await fetch('https://api.manus.im/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${key}`
+        },
+        body: JSON.stringify({
+          model: 'manus-vision',
+          messages: [{ role: 'user', content: 'test' }],
+          max_tokens: 10
+        })
+      });
     }
     
     if (response.ok) {
@@ -1192,6 +1274,7 @@ async function captureAndAnalyze() {
   const useOpenAI = document.getElementById('use-openai').checked;
   const useMistral = document.getElementById('use-mistral').checked;
   const usePerplexity = document.getElementById('use-perplexity').checked;
+  const useManus = document.getElementById('use-manus').checked;
   const useLocal = document.getElementById('use-local').checked;
   
   const customChecked = Object.keys(customAIs).filter(aiKey => {
@@ -1199,7 +1282,7 @@ async function captureAndAnalyze() {
     return checkbox && checkbox.checked;
   });
   
-  if (!useClaude && !useGemini && !useGrok && !useDeepSeek && !useOpenAI && !useMistral && !usePerplexity && !useLocal && customChecked.length === 0) {
+  if (!useClaude && !useGemini && !useGrok && !useDeepSeek && !useOpenAI && !useMistral && !usePerplexity && !useManus && !useLocal && customChecked.length === 0) {
     alert('⚠️ Debes seleccionar al menos una IA');
     return;
   }
@@ -1211,6 +1294,7 @@ async function captureAndAnalyze() {
   if (useOpenAI && !localStorage.getItem('openai_api_key')) missingKeys.push('GPT-4 Vision');
   if (useMistral && !localStorage.getItem('mistral_api_key')) missingKeys.push('Pixtral');
   if (usePerplexity && !localStorage.getItem('perplexity_api_key')) missingKeys.push('Perplexity');
+  if (useManus && !localStorage.getItem('manus_api_key')) missingKeys.push('Manus');
   if (useLocal && !localStorage.getItem('local_endpoint')) missingKeys.push('Mi IA Local (configura el endpoint)');
   
   customChecked.forEach(aiKey => {
@@ -1267,6 +1351,7 @@ async function captureAndAnalyze() {
     if (useOpenAI) promises.push(analyzeWithOpenAI(imageData));
     if (useMistral) promises.push(analyzeWithMistral(imageData));
     if (usePerplexity) promises.push(analyzeWithPerplexity(imageData));
+    if (useManus) promises.push(analyzeWithManus(imageData));
     if (useLocal) promises.push(analyzeWithLocal(imageData));
     
     customChecked.forEach(aiKey => {

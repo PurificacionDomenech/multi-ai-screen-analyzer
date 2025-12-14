@@ -63,6 +63,10 @@
             <span>🔍 Perplexity</span>
           </label>
           <label class="checkbox-item">
+            <input type="checkbox" id="use-manus">
+            <span>🧙 Manus</span>
+          </label>
+          <label class="checkbox-item">
             <input type="checkbox" id="use-local">
             <span>🖥️ Mi IA Local</span>
           </label>
@@ -110,6 +114,10 @@
           <label class="checkbox-item">
             <input type="checkbox" id="chat-perplexity">
             <span>🔍 Perplexity</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="chat-manus">
+            <span>🧙 Manus</span>
           </label>
           <label class="checkbox-item">
             <input type="checkbox" id="chat-local">
@@ -298,6 +306,28 @@
                 <button type="submit">💾 Guardar</button>
                 <button type="button" onclick="testConnection('perplexity')" class="success">🔍 Probar Conexión</button>
                 <button type="button" onclick="clearKey('perplexity')" class="secondary">🗑️ Borrar</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- MANUS -->
+          <div class="ai-item" id="manus-config">
+            <div class="ai-header">
+              <div class="ai-name">
+                🧙 Manus (Manus AI)
+                <span class="status-badge disconnected" id="manus-status">No configurado</span>
+              </div>
+            </div>
+            <form onsubmit="event.preventDefault(); saveKey('manus');">
+              <div class="input-group">
+                <label for="manus-key">API Key:</label>
+                <input type="password" id="manus-key" placeholder="..." autocomplete="off">
+                <p class="help-text">Obtén tu key en: <a href="https://manus.im" target="_blank">manus.im</a></p>
+              </div>
+              <div class="ai-actions">
+                <button type="submit">💾 Guardar</button>
+                <button type="button" onclick="testConnection('manus')" class="success">🔍 Probar Conexión</button>
+                <button type="button" onclick="clearKey('manus')" class="secondary">🗑️ Borrar</button>
               </div>
             </form>
           </div>

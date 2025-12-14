@@ -60,7 +60,7 @@ app.post('/api/gemini', async (req, res) => {
     
     try {
         console.log('📤 Enviando request a Google...');
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
         const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -109,6 +109,166 @@ app.post('/api/grok', async (req, res) => {
     }
 });
 
+app.post('/api/deepseek', async (req, res) => {
+    console.log('🔮 Proxy DeepSeek llamado');
+    const authorization = req.headers['authorization'];
+    
+    if (!authorization) {
+        console.error('❌ Falta Authorization en headers');
+        return res.status(400).json({ error: 'Falta Authorization en headers' });
+    }
+    
+    console.log('✅ Authorization recibida');
+    
+    try {
+        console.log('📤 Enviando request a DeepSeek...');
+        const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': authorization
+            },
+            body: JSON.stringify(req.body)
+        });
+        
+        console.log(`📥 Respuesta de DeepSeek: ${response.status}`);
+        const data = await response.json();
+        
+        return res.status(response.status).json(data);
+    } catch (error) {
+        console.error('❌ Error en proxy DeepSeek:', error.message);
+        return res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/openai', async (req, res) => {
+    console.log('🤖 Proxy OpenAI llamado');
+    const authorization = req.headers['authorization'];
+    
+    if (!authorization) {
+        console.error('❌ Falta Authorization en headers');
+        return res.status(400).json({ error: 'Falta Authorization en headers' });
+    }
+    
+    console.log('✅ Authorization recibida');
+    
+    try {
+        console.log('📤 Enviando request a OpenAI...');
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': authorization
+            },
+            body: JSON.stringify(req.body)
+        });
+        
+        console.log(`📥 Respuesta de OpenAI: ${response.status}`);
+        const data = await response.json();
+        
+        return res.status(response.status).json(data);
+    } catch (error) {
+        console.error('❌ Error en proxy OpenAI:', error.message);
+        return res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/mistral', async (req, res) => {
+    console.log('🌟 Proxy Mistral llamado');
+    const authorization = req.headers['authorization'];
+    
+    if (!authorization) {
+        console.error('❌ Falta Authorization en headers');
+        return res.status(400).json({ error: 'Falta Authorization en headers' });
+    }
+    
+    console.log('✅ Authorization recibida');
+    
+    try {
+        console.log('📤 Enviando request a Mistral...');
+        const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': authorization
+            },
+            body: JSON.stringify(req.body)
+        });
+        
+        console.log(`📥 Respuesta de Mistral: ${response.status}`);
+        const data = await response.json();
+        
+        return res.status(response.status).json(data);
+    } catch (error) {
+        console.error('❌ Error en proxy Mistral:', error.message);
+        return res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/perplexity', async (req, res) => {
+    console.log('🔍 Proxy Perplexity llamado');
+    const authorization = req.headers['authorization'];
+    
+    if (!authorization) {
+        console.error('❌ Falta Authorization en headers');
+        return res.status(400).json({ error: 'Falta Authorization en headers' });
+    }
+    
+    console.log('✅ Authorization recibida');
+    
+    try {
+        console.log('📤 Enviando request a Perplexity...');
+        const response = await fetch('https://api.perplexity.ai/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': authorization
+            },
+            body: JSON.stringify(req.body)
+        });
+        
+        console.log(`📥 Respuesta de Perplexity: ${response.status}`);
+        const data = await response.json();
+        
+        return res.status(response.status).json(data);
+    } catch (error) {
+        console.error('❌ Error en proxy Perplexity:', error.message);
+        return res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/manus', async (req, res) => {
+    console.log('🧙 Proxy Manus llamado');
+    const authorization = req.headers['authorization'];
+    
+    if (!authorization) {
+        console.error('❌ Falta Authorization en headers');
+        return res.status(400).json({ error: 'Falta Authorization en headers' });
+    }
+    
+    console.log('✅ Authorization recibida');
+    
+    try {
+        console.log('📤 Enviando request a Manus...');
+        const response = await fetch('https://api.manus.im/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': authorization
+            },
+            body: JSON.stringify(req.body)
+        });
+        
+        console.log(`📥 Respuesta de Manus: ${response.status}`);
+        const data = await response.json();
+        
+        return res.status(response.status).json(data);
+    } catch (error) {
+        console.error('❌ Error en proxy Manus:', error.message);
+        return res.status(500).json({ error: error.message });
+    }
+});
+
 app.post('/api/custom', async (req, res) => {
     console.log('🤖 Proxy Custom llamado');
     const { endpoint, headers, body } = req.body;
@@ -147,6 +307,11 @@ app.listen(port, '0.0.0.0', () => {
    • POST /api/claude
    • POST /api/gemini
    • POST /api/grok
+   • POST /api/deepseek
+   • POST /api/openai
+   • POST /api/mistral
+   • POST /api/perplexity
+   • POST /api/manus
    • POST /api/custom
 
 ⚠️  Configura ANTHROPIC_API_KEY en Secrets

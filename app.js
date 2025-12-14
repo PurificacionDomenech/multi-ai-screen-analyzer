@@ -479,14 +479,14 @@ async function chatWithDeepSeek(message, imageBase64) {
     if (message) content.push({ type: 'text', text: message });
     if (imageBase64) content.push({ type: 'image_url', image_url: { url: `data:image/png;base64,${imageBase64}` }});
 
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    const response = await fetch('/api/deepseek', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${key}`
       },
       body: JSON.stringify({
-        model: 'deepseek-vl',
+        model: 'deepseek-chat',
         messages: [{ role: 'user', content }],
         max_tokens: 2048
       })
@@ -509,7 +509,7 @@ async function chatWithOpenAI(message, imageBase64) {
     if (message) content.push({ type: 'text', text: message });
     if (imageBase64) content.push({ type: 'image_url', image_url: { url: `data:image/png;base64,${imageBase64}` }});
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('/api/openai', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -539,7 +539,7 @@ async function chatWithMistral(message, imageBase64) {
     if (message) content.push({ type: 'text', text: message });
     if (imageBase64) content.push({ type: 'image_url', image_url: { url: `data:image/png;base64,${imageBase64}` }});
 
-    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+    const response = await fetch('/api/mistral', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -569,7 +569,7 @@ async function chatWithPerplexity(message, imageBase64) {
     if (message) content.push({ type: 'text', text: message });
     if (imageBase64) content.push({ type: 'image_url', image_url: { url: `data:image/png;base64,${imageBase64}` }});
 
-    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+    const response = await fetch('/api/perplexity', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -599,14 +599,14 @@ async function chatWithManus(message, imageBase64) {
     if (message) content.push({ type: 'text', text: message });
     if (imageBase64) content.push({ type: 'image_url', image_url: { url: `data:image/png;base64,${imageBase64}` }});
 
-    const response = await fetch('https://api.manus.im/v1/chat/completions', {
+    const response = await fetch('/api/manus', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${key}`
       },
       body: JSON.stringify({
-        model: 'manus-vision',
+        model: 'manus-1',
         messages: [{ role: 'user', content }],
         max_tokens: 2048
       })
@@ -853,14 +853,14 @@ async function analyzeWithDeepSeek(imageBase64) {
   }
   
   try {
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    const response = await fetch('/api/deepseek', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${key}`
       },
       body: JSON.stringify({
-        model: 'deepseek-vl',
+        model: 'deepseek-chat',
         messages: [{
           role: 'user',
           content: [
@@ -889,7 +889,7 @@ async function analyzeWithOpenAI(imageBase64) {
   }
   
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('/api/openai', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -925,7 +925,7 @@ async function analyzeWithMistral(imageBase64) {
   }
   
   try {
-    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+    const response = await fetch('/api/mistral', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -961,7 +961,7 @@ async function analyzeWithPerplexity(imageBase64) {
   }
   
   try {
-    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+    const response = await fetch('/api/perplexity', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -997,14 +997,14 @@ async function analyzeWithManus(imageBase64) {
   }
   
   try {
-    const response = await fetch('https://api.manus.im/v1/chat/completions', {
+    const response = await fetch('/api/manus', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${key}`
       },
       body: JSON.stringify({
-        model: 'manus-vision',
+        model: 'manus-1',
         messages: [{
           role: 'user',
           content: [
@@ -1123,20 +1123,20 @@ async function testConnection(aiName) {
         })
       });
     } else if (aiName === 'deepseek') {
-      response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      response = await fetch('/api/deepseek', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${key}`
         },
         body: JSON.stringify({
-          model: 'deepseek-vl',
+          model: 'deepseek-chat',
           messages: [{ role: 'user', content: 'test' }],
           max_tokens: 10
         })
       });
     } else if (aiName === 'openai') {
-      response = await fetch('https://api.openai.com/v1/chat/completions', {
+      response = await fetch('/api/openai', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1149,7 +1149,7 @@ async function testConnection(aiName) {
         })
       });
     } else if (aiName === 'mistral') {
-      response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+      response = await fetch('/api/mistral', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1162,7 +1162,7 @@ async function testConnection(aiName) {
         })
       });
     } else if (aiName === 'perplexity') {
-      response = await fetch('https://api.perplexity.ai/chat/completions', {
+      response = await fetch('/api/perplexity', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1175,14 +1175,14 @@ async function testConnection(aiName) {
         })
       });
     } else if (aiName === 'manus') {
-      response = await fetch('https://api.manus.im/v1/chat/completions', {
+      response = await fetch('/api/manus', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${key}`
         },
         body: JSON.stringify({
-          model: 'manus-vision',
+          model: 'manus-1',
           messages: [{ role: 'user', content: 'test' }],
           max_tokens: 10
         })

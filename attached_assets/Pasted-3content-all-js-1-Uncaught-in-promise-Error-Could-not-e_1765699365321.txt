@@ -1,0 +1,24 @@
+3content-all.js:1  Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+    at y (content-all.js:1:57697)
+(index):1  Access to fetch at 'https://api.deepseek.com/v1/chat/completions' from origin 'https://50e71146-eef1-4efe-afcb-582387b2df49-00-2jfkp8vqb0vdp.spock.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+api.deepseek.com/v1/chat/completions:1   Failed to load resource: net::ERR_FAILED
+(index):1  Access to fetch at 'https://api.deepseek.com/v1/chat/completions' from origin 'https://50e71146-eef1-4efe-afcb-582387b2df49-00-2jfkp8vqb0vdp.spock.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+api.deepseek.com/v1/chat/completions:1   Failed to load resource: net::ERR_FAILED
+api.openai.com/v1/chat/completions:1   Failed to load resource: the server responded with a status of 429 ()
+api.manus.im/v1/chat/completions:1   Failed to load resource: the server responded with a status of 404 ()
+content-all.js:1  Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+    at y (content-all.js:1:57697)
+api.manus.im/v1/chat/completions:1   Failed to load resource: the server responded with a status of 404 ()
+(index):1  Access to fetch at 'https://api.deepseek.com/v1/chat/completions' from origin 'https://50e71146-eef1-4efe-afcb-582387b2df49-00-2jfkp8vqb0vdp.spock.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+api.deepseek.com/v1/chat/completions:1   Failed to load resource: net::ERR_FAILED
+/api/claude:1   Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+/api/grok:1   Failed to load resource: the server responded with a status of 403 (Forbidden)
+api.openai.com/v1/chat/completions:1   Failed to load resource: the server responded with a status of 429 ()
+/api/gemini:1   Failed to load resource: the server responded with a status of 404 (Not Found)
+/api/claude:1   Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+/api/gemini:1   Failed to load resource: the server responded with a status of 404 (Not Found)
+/api/grok:1   Failed to load resource: the server responded with a status of 403 (Forbidden)
+(index):1  Access to fetch at 'https://api.deepseek.com/v1/chat/completions' from origin 'https://50e71146-eef1-4efe-afcb-582387b2df49-00-2jfkp8vqb0vdp.spock.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+api.deepseek.com/v1/chat/completions:1   Failed to load resource: net::ERR_FAILED
+api.openai.com/v1/chat/completions:1   Failed to load resource: the server responded with a status of 429 ()
+api.manus.im/v1/chat/completions:1   Failed to load resource: the server responded with a status of 404 ()

@@ -20,7 +20,7 @@ app.post('/api/claude', async (req, res) => {
     
     if (!ANTHROPIC_API_KEY) {
         console.error('❌ ANTHROPIC_API_KEY no configurada');
-        return res.status(500).json({ error: 'ANTHROPIC_API_KEY no configurada en Secrets' });
+        return res.status(400).json({ error: 'ANTHROPIC_API_KEY no configurada en Secrets' });
     }
     
     console.log('✅ API Key encontrada');
